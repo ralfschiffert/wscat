@@ -11,6 +11,9 @@ const readline = require('readline');
 const tty = require('tty');
 const WebSocket = require('ws');
 
+
+var start = Date.now()
+
 /**
  * InputReader - processes console input.
  *
@@ -37,7 +40,11 @@ class Console extends EventEmitter {
     this._resetInput = () => {
       this.clear();
     };
+
+
   }
+
+
 
   static get Colors() {
     return {
@@ -108,7 +115,7 @@ const version = require('../package.json').version;
 
 program
   .version(version)
-  .usage('[options] (--listen <port> | --connect <url>)')
+  .usage('RALF [options] (--listen <port> | --connect <url>)')
   .option(
     '--auth <username:password>',
     'add basic HTTP authentication header (--connect only)'
@@ -223,7 +230,8 @@ if (programOptions.listen) {
     });
 
     ws.on('message', (data) => {
-      wsConsole.print(Console.Types.Incoming, data, Console.Colors.Blue);
+	    console.log("RALF")
+      wsConsole.print(Console.Types.Incoming, data, Console.Colors.Red);
     });
   });
 
@@ -339,6 +347,7 @@ if (programOptions.listen) {
 
     ws.on('close', (code, reason) => {
       if (!programOptions.execute) {
+	      console.log("execution: " + (Date.now() - start))
         wsConsole.print(
           Console.Types.Control,
           `Disconnected (code: ${code}, reason: "${reason}")`,
@@ -355,7 +364,16 @@ if (programOptions.listen) {
     });
 
     ws.on('message', (data) => {
-      wsConsole.print(Console.Types.Incoming, data, Console.Colors.Blue);
+      // console.log("RALF BLUE")
+      // deserialize the DATA
+      try {
+      var myObject = JSON.parse(data)
+      wsConsole.print(Console.Types.Incoming, myObject.data.id, Console.Colors.Red);
+      } catch ( e ) {
+	      // console.log(e)
+	     start = Date.now();
+	      console.log("start: " + start)
+      }
     });
 
     ws.on('ping', (data) => {
